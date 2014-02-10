@@ -1,0 +1,72 @@
+<head>
+  <title>Tournament Leaderboards</title>  
+</head>
+
+<body>
+<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+	<div id="outer">
+		{{> d3vis}}
+		{{> container}}			
+	</div>
+</body>
+
+<template name="d3vis">
+  <div class="d3board" height="150px" width="600px">
+    <svg id="d3vis"></svg>
+  </div>
+</template>
+
+<template name="container">
+	<div class="container">
+		<div class="explain"><span class="text-muted">Click Tournament to expand</span>
+			<div class="buttons"><input type="button" class="btn btn-info reset" value="reset"/></div>
+		</div>
+		{{> tournament}}
+		{{#each tournaments}}
+			{{#if selected_tournament}}
+				{{> leaderboard}}
+			{{/if}}
+		{{/each}}
+	</div>
+</template>
+
+<template name="tournament">
+	<div class="tournaments">
+			{{#each tournaments}}
+				<div class="tournament">
+					{{> info}}
+				</div>
+			{{/each}}
+	</div>
+</template>
+
+<template name="info">
+	<div class="info {{selected}}">
+		<span class="name">{{name}}</span>
+		<span class="game">{{game}}</span>
+	</div>
+</template>
+
+<template name="leaderboard">
+	<div class="leaderboard">
+		{{#if selected_name}}
+			<div class="details">
+				<span class="name text-warning">{{selected_name}}</span>
+				<span class="buttons"><input type="button" class="btn btn-success inc" value="+ 1" /><input type="button" class="btn btn-danger dec" value="- 1" /></span>
+			</div>
+		{{else}}
+			<div class="none">Click a player to select</div>
+		{{/if}}
+		
+		{{#each players}}
+		  {{> player}}
+		{{/each}}
+	</div>
+</template>
+
+<template name="player">
+  <div class="player {{selected}}">
+    <span class="name">{{name}}</span>
+    <span class="score">{{score}}</span>
+  </div>
+</template>

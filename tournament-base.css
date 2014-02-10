@@ -1,0 +1,114 @@
+#outer {
+    width: 1200px;
+    margin: 0 auto;
+	padding-top: 10px;
+}
+
+.player, .info {
+    cursor: pointer;
+    padding: 5px;
+}
+
+.tournaments {
+	width: 550px;
+	margin-left: 10px;
+	float: left;
+}
+
+.leaderboard {
+	border-style: solid;
+    border-color: #ccc;
+    border-width: 2px;
+	border-radius: 20px 10px;
+	width: 550px;
+	margin-left: 10px;
+	float: right;
+}
+
+.player .name, .info .name{
+    display: inline-block;
+    width: 300px;
+    font-size: 1.75em;
+}
+
+.info .game {
+    display: inline-block;
+	font-size: 1.25em;
+}
+
+.player .score {
+    display: inline-block;
+    float: right;
+    text-align: right;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+.buttons {
+	float: right;
+}
+
+input {
+	margin-right: 20px;
+}
+
+.details, .none,  .explain {
+    font-size: 1.45em;
+    border-style: none dashed dashed dashed;
+    border-color: #ccc;
+    border-width: 2px;
+	border-radius: 20px 10px;
+    margin: 0px 10px;
+    padding: 10px;	
+}
+
+.details, .none {
+	border-style: none none dashed none;
+	border-color: #ccc;
+	border-width: 2px;
+	border-radius: 5px 2px;
+	margin-bottom: 5px;	
+}
+
+.explain {
+	margin: 10px 0px;
+	padding-bottom: 12px;
+	font-weight: bold;
+}
+
+.none {
+    color: #777;
+}
+
+.inc, .dec {
+  cursor: pointer;
+}
+
+text {
+	fill: #EBEBEB;
+}
+
+.bar {
+  fill: steelblue;
+}
+
+.bar:hover {
+  fill: brown;
+}
+
+.axis {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.x.axis path {
+  display: none;
+}
+
+
