@@ -14,6 +14,9 @@ if (Meteor.isClient) {
 	Template.tournament.tournaments = function () {
 		return Tournaments.find({}, {fields: {name: 1, game: 1}});
 	};	
+	Template.tournlist.tournaments = function () {
+		return Tournaments.find({}, {fields: {name: 1, game: 1}});
+	};	
 	// grab cursor with _id only to determine match with selected_tournament.
 	Template.container.tournaments = function () {
 		return Tournaments.find({}, {fields: {_id: 1}});
@@ -46,7 +49,7 @@ if (Meteor.isClient) {
 			}
 		return false;
 	};
-	
+	// selected_tournament in container template.  TODO: kill redundancy
 	Template.container.selected_tournament = function () {
 		var tourn = Tournaments.findOne(Session.get("selected_tournament"));		
 		// check against session's _id to determine leaderboard load
@@ -55,6 +58,13 @@ if (Meteor.isClient) {
 			}
 		return false;
 	};
+	
+	Template.navbar.events({
+		'click .dropdown-toggle': function (e) {
+			e.preventDefault();
+			$(e.target).find('.dropdown-menu').toggle();
+		}
+	});
 	
 	// determine whether or not to add the selected class to player div in handlebars loop
 	Template.player.selected = function () {
@@ -65,8 +75,8 @@ if (Meteor.isClient) {
 		return Session.equals("selected_tournament", this._id) ? "text-success" : '';
 	};
 	// events to capture in tournament template
-	Template.info.events({
-		'click .info': function () {
+	Template.tournlist.events({
+		'click li': function () {
 			Session.set("selected_tournament", this._id);
 			Session.set("selected_player",'');
 		}
@@ -106,8 +116,7 @@ if (Meteor.isClient) {
 		'click': function () {
 			Session.set("selected_player", this.playerid);
 		}
-	});//end player events
-
+	});//end player events	
 	// Testing d3 visualizations in meteor from example: 
 	// https://github.com/adrianveres/Reactive-Bar-Chart-Demo
 	Template.d3vis.created = function () {
@@ -169,7 +178,7 @@ if (Meteor.isClient) {
           .attr("class", "bar")
         bar_selector
           .transition()
-          .duration(100)
+          .duration(5)
           .attr("x", function(d) { return window.d3vis.x(d.name);})
           .attr("width", window.d3vis.x.rangeBand())
           .attr("y", function(d) { return window.d3vis.y(d.score); })
@@ -181,7 +190,7 @@ if (Meteor.isClient) {
           .attr("class", "bar_text")
         text_selector
           .transition()
-          .duration(100)
+          .duration(5)
           .attr()
           .attr("x", function(d) { return window.d3vis.x(d.name) + 10;})
           .attr("y", function(d) { return window.d3vis.y(d.score) - 2; })

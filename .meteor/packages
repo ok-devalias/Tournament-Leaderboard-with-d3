@@ -7,3 +7,6 @@ insecure
 preserve-inputs
 d3
 underscore
+standard-app-packages
+jquery
+bootstrap-3

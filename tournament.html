@@ -3,12 +3,58 @@
 </head>
 
 <body>
-<script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
-	<div id="outer">
+	{{> navbar}}	
+	<div id="outer">		
 		{{> d3vis}}
 		{{> container}}			
-	</div>
+	</div>	
 </body>
+
+<template name="navbar">
+	<div class="navbar navbar-default" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+			  </button>
+			  <a class="navbar-brand" href="#">El Soy Tournamento!</a>
+			</div> 
+			<div class="navbar-collapse collapse">
+				  <ul class="nav navbar-nav">
+						<li class="dropdown">
+							<a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Tournaments <b class="caret"></b></a>							
+							<ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
+								{{> tournlist}}
+							</ul>							
+						</li>
+						 <li class="dropdown">
+							<a id="drop2" role="button" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
+							<ul class="dropdown-menu" role="menu" aria-labelledby="drop2">
+								<li role="presentation"><a role="menuitem" tabindex="-1" href="http://twitter.com/fat">Action</a></li>
+								<li role="presentation"><a role="menuitem" tabindex="-1" href="http://twitter.com/fat">Another action</a></li>
+								<li role="presentation"><a role="menuitem" tabindex="-1" href="http://twitter.com/fat">Something else here</a></li>
+								<li role="presentation" class="divider"></li>
+								<li role="presentation"><a role="menuitem" tabindex="-1" href="http://twitter.com/fat">Separated link</a></li>
+							</ul>
+						</li>
+						<li><a href="#">Foo</a></li>
+						<li><a href="#">Bar</a></li>
+						<li><a href="#">Baz</a></li>
+						<li><a href="#">Login</a></li>						
+				  </ul>
+			</div><!--/.nav-collapse -->
+		</div>
+	</div>
+</template>
+
+<template name="tournlist">
+	{{#each tournaments}}
+		<li>{{name}}</li>
+	{{/each}}
+</template>
 
 <template name="d3vis">
   <div class="d3board" height="150px" width="600px">
@@ -18,12 +64,17 @@
 
 <template name="container">
 	<div class="container">
+		<!--
 		<div class="explain"><span class="text-muted">Click Tournament to expand</span>
 			<div class="buttons"><input type="button" class="btn btn-info reset" value="reset"/></div>
 		</div>
-		{{> tournament}}
+		-->
+		
 		{{#each tournaments}}
 			{{#if selected_tournament}}
+				<div class="tournament">
+					{{> info}}
+				</div>
 				{{> leaderboard}}
 			{{/if}}
 		{{/each}}
