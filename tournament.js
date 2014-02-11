@@ -10,16 +10,12 @@ if (Meteor.isClient) {
 	Meteor.subscribe('tournamentdb', function() {
 		Session.set('data_loaded', true);
 	});
-	// grabs a cursor of all documents in the Tournaments collection
-	Template.tournament.tournaments = function () {
-		return Tournaments.find({}, {fields: {name: 1, game: 1}});
-	};	
 	Template.tournlist.tournaments = function () {
 		return Tournaments.find({}, {fields: {name: 1, game: 1}});
 	};	
 	// grab cursor with _id only to determine match with selected_tournament.
 	Template.container.tournaments = function () {
-		return Tournaments.find({}, {fields: {_id: 1}});
+		return Tournaments.find({}, {fields: {_id: 1, game: 1, name: 1}});
 	};	
 	// selected_player in tournament template
 	// Projection operator $elemMatch is not supported, so instead of grabbing one record, we grab them all and 
@@ -40,22 +36,16 @@ if (Meteor.isClient) {
 		var unsorted = Tournaments.findOne(Session.get("selected_tournament"), {fields: {players: 1}});
 		return unsorted.players.sort(function (a, b) { return b.score - a.score});
 	};
-	// selected_tournament in tournament template
-	Template.tournament.selected_tournament = function () {
-		var tourn = Tournaments.findOne(Session.get("selected_tournament"));		
-		// check against session's _id to determine leaderboard load
-		if (this._id === Session.get("selected_tournament")) {
-			return true;
-			}
-		return false;
-	};
 	// selected_tournament in container template.  TODO: kill redundancy
 	Template.container.selected_tournament = function () {
-		var tourn = Tournaments.findOne(Session.get("selected_tournament"));		
-		// check against session's _id to determine leaderboard load
-		if (this._id === Session.get("selected_tournament")) {
-			return true;
-			}
+		if (Session.get('data_loaded')) {
+			var tourns = Tournaments.findOne(Session.get("selected_tournament"));		
+			// check against session's _id to determine leaderboard load
+			if (this._id === Session.get("selected_tournament")) {
+				return true;
+				}
+			return false;
+		}
 		return false;
 	};
 	
@@ -82,12 +72,12 @@ if (Meteor.isClient) {
 		}
 	});
 	// capture reset even in container template
-	Template.container.events({
-		'click input.reset': function () {
-			Session.set("selected_tournament", '');
-			Session.set("selected_player",'');
-		}
-	});
+	//Template.container.events({
+	//	'click input.reset': function () {
+	//		Session.set("selected_tournament", '');
+	//		Session.set("selected_player",'');
+	//	}
+	//});
 	// leaderboard events capture
 	Template.leaderboard.events({
 	
@@ -117,6 +107,7 @@ if (Meteor.isClient) {
 			Session.set("selected_player", this.playerid);
 		}
 	});//end player events	
+	
 	// Testing d3 visualizations in meteor from example: 
 	// https://github.com/adrianveres/Reactive-Bar-Chart-Demo
 	Template.d3vis.created = function () {
@@ -126,8 +117,9 @@ if (Meteor.isClient) {
       window.d3vis = {}
       Deps.autorun(function () {
         
-        // On first run, set up the visualiation
-        if (Deps.currentComputation.firstRun) {
+        // On first run, set up the visualiation EDIT: in current context, these attr are being clobberred on template rerender.
+        //if (Deps.currentComputation.firstRun) {
+		  //console.log("firstRun");
           window.d3vis.margin = {top: 15, right: 5, bottom: 5, left: 5},
           window.d3vis.width = 600 - window.d3vis.margin.left - window.d3vis.margin.right,
           window.d3vis.height = 120 - window.d3vis.margin.top - window.d3vis.margin.bottom;
@@ -146,11 +138,13 @@ if (Meteor.isClient) {
             .append("g")
               .attr("class", "wrapper")
               .attr("transform", "translate(" + window.d3vis.margin.left + "," + window.d3vis.margin.top + ")");
-        }
+        //}
 
     // Get the colors based on the sorted names
 	if (Session.get('data_loaded') && Session.get('selected_tournament')) {
-		console.log("data loaded");
+		console.log("data loaded & selected_tournament");
+		console.log("selected_tournament = ", Session.get('selected_tournament'));
+		console.log("selected_player = ", Session.get('selected_player'));
 		
 		names = Tournaments.findOne(Session.get('selected_tournament'), {fields: { players: 1}});
 		names = names.players.sort(function (a,b){return b.score - a.score});
@@ -162,8 +156,9 @@ if (Meteor.isClient) {
 	
         // Two selectors (this could be streamlined...)
 		// Determines if selected_tournament changed by lack of valid selected_player.
-		// Redraw only if reset or tournament change.
-		if (Session.get('selected_player').length <= 0){ 
+		// Redraw only if reset or tournament change.				
+		if (Session.get('selected_player').toString.length < 1){ 
+			console.log("no selected player, wipe old data");
 			window.d3vis.svg.selectAll(".bar").remove();
 			window.d3vis.svg.selectAll(".bar_text").remove();
 			}
@@ -198,9 +193,9 @@ if (Meteor.isClient) {
           .attr("height", function(d) { return window.d3vis.height - window.d3vis.y(d.score); })
 	}
 	else if (Session.get('data_loaded') && !Session.get('selected_tournament')) {
-			bar_selector.remove();
-			text_selector.remove();
 			console.log("removing");
+			bar_selector.remove();
+			text_selector.remove();			
 		}
 	else { console.log("data not loaded"); }  //debug info
       });

@@ -5,7 +5,6 @@
 <body>
 	{{> navbar}}	
 	<div id="outer">		
-		{{> d3vis}}
 		{{> container}}			
 	</div>	
 </body>
@@ -29,22 +28,14 @@
 							<ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
 								{{> tournlist}}
 							</ul>							
-						</li>
-						 <li class="dropdown">
-							<a id="drop2" role="button" class="dropdown-toggle" data-toggle="dropdown">Dropdown <b class="caret"></b></a>
-							<ul class="dropdown-menu" role="menu" aria-labelledby="drop2">
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="http://twitter.com/fat">Action</a></li>
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="http://twitter.com/fat">Another action</a></li>
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="http://twitter.com/fat">Something else here</a></li>
-								<li role="presentation" class="divider"></li>
-								<li role="presentation"><a role="menuitem" tabindex="-1" href="http://twitter.com/fat">Separated link</a></li>
-							</ul>
-						</li>
+						</li>					
 						<li><a href="#">Foo</a></li>
 						<li><a href="#">Bar</a></li>
-						<li><a href="#">Baz</a></li>
-						<li><a href="#">Login</a></li>						
-				  </ul>
+						<li><a href="#">Baz</a></li>						
+				</ul>
+				<ul class="nav navbar-nav navbar-right">
+					{{ loginButtons }}
+				</ul>
 			</div><!--/.nav-collapse -->
 		</div>
 	</div>
@@ -54,12 +45,6 @@
 	{{#each tournaments}}
 		<li>{{name}}</li>
 	{{/each}}
-</template>
-
-<template name="d3vis">
-  <div class="d3board" height="150px" width="600px">
-    <svg id="d3vis"></svg>
-  </div>
 </template>
 
 <template name="container">
@@ -72,30 +57,32 @@
 		
 		{{#each tournaments}}
 			{{#if selected_tournament}}
-				<div class="tournament">
+				<div class="explain">
 					{{> info}}
 				</div>
+				{{> d3vis}}
 				{{> leaderboard}}
 			{{/if}}
 		{{/each}}
 	</div>
 </template>
 
-<template name="tournament">
-	<div class="tournaments">
-			{{#each tournaments}}
-				<div class="tournament">
-					{{> info}}
-				</div>
-			{{/each}}
+<template name="info">
+	<div class="info {{selected}}">
+		<div class="row">
+			<div class="col-md-4">
+				<span class="name">{{name}}</span>
+			</div>
+			<div class="col-md-4 col-md-offset-4 text-right">
+				<span class="game">{{game}}</span>
+		</div>
 	</div>
 </template>
 
-<template name="info">
-	<div class="info {{selected}}">
-		<span class="name">{{name}}</span>
-		<span class="game">{{game}}</span>
-	</div>
+<template name="d3vis">
+  <div class="d3board pull-left" width="600" height="120">
+    <svg id="d3vis"></svg>
+  </div>
 </template>
 
 <template name="leaderboard">
