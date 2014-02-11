@@ -1,8 +1,7 @@
-Reactive-Bar-Chart-Demo
+Tournament-Leaderboard-with-d3
 =======================
 
-This is a simple Meteor app to demo a reactive D3JS bar chart.
+Modification of adrianveres' Leaderboard with d3 demo.
 
-Combined two examples for this demo:
- - The 'leaderboard' Meteor example
- - D3js bar-chart example from http://bl.ocks.org/mbostock/3885304
+This modification adapts the leaderboard example and d3 to use a more complex JSON document structure.  Supports multiple leaderboards.
+
