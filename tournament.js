@@ -18,7 +18,7 @@ if (Meteor.isClient) {
 		return Tournaments.find({}, {fields: {_id: 1, game: 1, name: 1}});
 	};	
 	// selected_player in tournament template
-	// Projection operator $elemMatch is not supported, so instead of grabbing one record, we grab them all and 
+	// Projection operator $elemMatch is not supported, so instead of grabbing one players subdocument, we grab them all and 
 	// sort through with JS.
 	Template.leaderboard.selected_name = function () {
 		var json = Tournaments.findOne(Session.get("selected_tournament"), {fields: { "players.playerid": 1, "players.name": 1}});
@@ -113,13 +113,14 @@ if (Meteor.isClient) {
 	Template.d3vis.created = function () {
     // Defer to make sure we manipulate DOM
     _.defer(function () {
-      // Use this as a global variable
-      window.d3vis = {}
-      Deps.autorun(function () {
+     // Use this as a global variable
+	window.d3vis = {};
+    Deps.autorun(function () {
         
-        // On first run, set up the visualiation EDIT: in current context, these attr are being clobberred on template rerender.
-        //if (Deps.currentComputation.firstRun) {
+        // On first run, set up the visualiation.  Use {{#constant}} in templates to preserve.
+        if (Deps.currentComputation.firstRun) {
 		  //console.log("firstRun");
+		  
           window.d3vis.margin = {top: 15, right: 5, bottom: 5, left: 5},
           window.d3vis.width = 600 - window.d3vis.margin.left - window.d3vis.margin.right,
           window.d3vis.height = 120 - window.d3vis.margin.top - window.d3vis.margin.bottom;
@@ -138,13 +139,13 @@ if (Meteor.isClient) {
             .append("g")
               .attr("class", "wrapper")
               .attr("transform", "translate(" + window.d3vis.margin.left + "," + window.d3vis.margin.top + ")");
-        //}
+        }
 
     // Get the colors based on the sorted names
 	if (Session.get('data_loaded') && Session.get('selected_tournament')) {
-		console.log("data loaded & selected_tournament");
-		console.log("selected_tournament = ", Session.get('selected_tournament'));
-		console.log("selected_player = ", Session.get('selected_player'));
+		//console.log("data loaded & selected_tournament");
+		//console.log("selected_tournament = ", Session.get('selected_tournament'));
+		//console.log("selected_player = ", Session.get('selected_player'));
 		
 		names = Tournaments.findOne(Session.get('selected_tournament'), {fields: { players: 1}});
 		names = names.players.sort(function (a,b){return b.score - a.score});
@@ -158,7 +159,7 @@ if (Meteor.isClient) {
 		// Determines if selected_tournament changed by lack of valid selected_player.
 		// Redraw only if reset or tournament change.				
 		if (Session.get('selected_player').toString.length < 1){ 
-			console.log("no selected player, wipe old data");
+			//console.log("no selected player, wipe old data");
 			window.d3vis.svg.selectAll(".bar").remove();
 			window.d3vis.svg.selectAll(".bar_text").remove();
 			}
@@ -167,37 +168,77 @@ if (Meteor.isClient) {
           .data(names, function (d) {return d.name})
         text_selector = window.d3vis.svg.selectAll(".bar_text")
           .data(names, function (d) {return d.name})
-
-        bar_selector
-          .enter().append("rect")
-          .attr("class", "bar")
-        bar_selector
-          .transition()
-          .duration(5)
-          .attr("x", function(d) { return window.d3vis.x(d.name);})
-          .attr("width", window.d3vis.x.rangeBand())
-          .attr("y", function(d) { return window.d3vis.y(d.score); })
-          .attr("height", function(d) { return window.d3vis.height - window.d3vis.y(d.score); })
-          .style("fill", function(d) { return window.d3vis.color(d.name);})
-
-        text_selector
-          .enter().append("text")
-          .attr("class", "bar_text")
-        text_selector
-          .transition()
-          .duration(5)
-          .attr()
-          .attr("x", function(d) { return window.d3vis.x(d.name) + 10;})
-          .attr("y", function(d) { return window.d3vis.y(d.score) - 2; })
-          .text(function(d) {return d.score;})
-          .attr("height", function(d) { return window.d3vis.height - window.d3vis.y(d.score); })
+		
+		// fancy transition for initial visualization display.  Slow to update, so only use once.
+		 if (Deps.currentComputation.firstRun) {
+			bar_selector
+			  .enter().append("rect")
+			  .attr("class", "bar")
+			  .attr("y", function(d) { return window.d3vis.height - .5; })
+			bar_selector
+			  .transition()
+			  .duration(500)
+			  .style("fill", function(d) { return window.d3vis.color(d.name);})
+			  .attr("x", function(d) { return window.d3vis.x(d.name);})
+			  .attr("width", window.d3vis.x.rangeBand())
+			  .each("end", function() {
+				d3.select(this)
+					.transition()
+					.attr("y", function(d) { return window.d3vis.y(d.score); })
+					.attr("height", function(d) { return window.d3vis.height - window.d3vis.y(d.score); })
+			})
+			
+			text_selector
+			  .enter().append("text")
+			  .attr("class", "bar_text")
+			text_selector
+			  .transition()
+			  .duration(600)
+			  .delay(100)
+			  .attr()
+			  .attr("x", function(d) { return window.d3vis.x(d.name) + 10;})
+			  .each("end", function() {
+				d3.select(this)
+					.transition()
+					.ease("bounce")
+					.attr("y", function(d) { return window.d3vis.y(d.score) - 2; })
+					.text(function(d) {return d.score;})
+					.attr("height", function(d) { return window.d3vis.height - window.d3vis.y(d.score); })
+			})
+		} else {  // more reactive transition for visualization updates.
+			bar_selector
+			  .enter().append("rect")
+			  .attr("class", "bar")
+			bar_selector
+			  .transition()
+			  .duration(50)
+			  .style("fill", function(d) { return window.d3vis.color(d.name);})
+			  .attr("x", function(d) { return window.d3vis.x(d.name);})
+			  .attr("width", window.d3vis.x.rangeBand())
+			  .attr("y", function(d) { return window.d3vis.y(d.score); })
+			  .attr("height", function(d) { return window.d3vis.height - window.d3vis.y(d.score); })
+						
+			text_selector
+			  .enter().append("text")
+			  .attr("class", "bar_text")
+			text_selector
+			  .transition()
+			  .duration(50)
+			  .attr()
+			  .attr("x", function(d) { return window.d3vis.x(d.name) + 10;})
+			  .attr("y", function(d) { return window.d3vis.y(d.score) - 2; })
+			  .text(function(d) {return d.score;})
+			  .attr("height", function(d) { return window.d3vis.height - window.d3vis.y(d.score); })
+		}
 	}
 	else if (Session.get('data_loaded') && !Session.get('selected_tournament')) {
-			console.log("removing");
+			//console.log("removing");
 			bar_selector.remove();
 			text_selector.remove();			
 		}
-	else { console.log("data not loaded"); }  //debug info
+	else { 
+		//console.log("data not loaded"); 
+	} 
       });
     });
   }

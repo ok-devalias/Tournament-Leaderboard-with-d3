@@ -80,9 +80,11 @@
 </template>
 
 <template name="d3vis">
-  <div class="d3board pull-left" width="600" height="120">
-    <svg id="d3vis"></svg>
-  </div>
+	{{#constant}}
+	  <div class="d3board pull-left" width="600" height="120">
+		<svg id="d3vis"></svg>
+	  </div>
+	{{/constant}}
 </template>
 
 <template name="leaderboard">

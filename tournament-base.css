@@ -57,6 +57,15 @@ input {
 	margin-right: 20px;
 }
 
+li {
+	font-size: 16px;
+	font-weight: 500;
+}
+
+.dropdown-menu li:hover {
+	background-color: #7E7DAC
+}
+
 .explain {
     font-size: 1.45em;
     border-style: none dashed dashed dashed;
