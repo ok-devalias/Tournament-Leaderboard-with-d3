@@ -2,12 +2,16 @@
   <title>Tournament Leaderboards</title>  
 </head>
 
-<body>
-	{{> navbar}}	
-	<div id="outer">		
-		{{> container}}			
+<template name="layout">
+	{{> navbar}}
+	<div id="outer">
+		{{yield}}
 	</div>	
-</body>
+</template>
+
+<template name="main">
+	{{> container}}
+</template>
 
 <template name="navbar">
 	<div class="navbar navbar-default" role="navigation">
@@ -31,7 +35,7 @@
 						</li>					
 						<li><a href="#">Foo</a></li>
 						<li><a href="#">Bar</a></li>
-						<li><a href="#">Baz</a></li>						
+						<li><a href="{{ pathFor 'account' }}">Account</a></li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					{{ loginButtons }}
@@ -49,32 +53,46 @@
 
 <template name="container">
 	<div class="container">
-		<!--
-		<div class="explain"><span class="text-muted">Click Tournament to expand</span>
-			<div class="buttons"><input type="button" class="btn btn-info reset" value="reset"/></div>
-		</div>
-		-->
-		
-		{{#each tournaments}}
-			{{#if selected_tournament}}
-				<div class="explain">
-					{{> info}}
-				</div>
-				{{> d3vis}}
-				{{> leaderboard}}
-			{{/if}}
-		{{/each}}
+		{{#if selected_any}}
+			{{#each tournaments}}
+				{{#if selected_tournament}}
+					<div class="explain">
+						{{> info}}
+					</div>
+					{{> d3vis}}
+					{{> leaderboard}}				
+				{{/if}}		
+			{{/each}}
+		{{else}}
+			<div class="explain">
+				{{> geninfo}}
+			</div>
+		{{/if}}
 	</div>
 </template>
 
 <template name="info">
 	<div class="info {{selected}}">
 		<div class="row">
-			<div class="col-md-4">
+			<div class="col-md-6">				
 				<span class="name">{{name}}</span>
 			</div>
-			<div class="col-md-4 col-md-offset-4 text-right">
+			<div class="col-md-4 col-md-offset-2 text-right">
 				<span class="game">{{game}}</span>
+			</div>
+		</div>
+	</div>
+</template>
+
+<template name="geninfo">
+	<div class="info">
+		<div class="row">		
+			<div class="col-md-4">
+				<span class="name">Choose a tournament</span>
+			</div>
+			<div class="col-md-4 col-md-offset-4 text-right">
+				<span class="game">Hurray!</span>
+			</div>
 		</div>
 	</div>
 </template>
@@ -109,4 +127,23 @@
     <span class="name">{{name}}</span>
     <span class="score">{{score}}</span>
   </div>
+</template>
+
+<template name="account">
+	<div class="container">
+		<div class="explain">
+			{{> accountinfo}}
+		</div>
+		{{#if isAdminUser}}
+			{{> accountsAdmin}}
+		{{else}}
+			Must be admin to see this...
+		{{/if}}
+	</div>
+</template>
+
+<template name="accountinfo">
+	<div class="info container">
+		<p class="accountinfo text-center">User Accounts</p>
+	</div>
 </template>

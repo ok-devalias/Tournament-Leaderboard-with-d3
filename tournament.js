@@ -1,12 +1,38 @@
-// set up our collections, used in MongoDB  (or maybe another document store later)
+// iron-router config and routes
+Router.configure({
+	layoutTemplate: 'layout'
+	});
+
+Router.map(function(){
+	this.route('home', {
+		path: '/',
+		template: 'main'
+	});
+	
+	this.route('account');
+	
+	this.route('admin', {
+        path:'/admin',
+        template: 'accountsAdmin',
+        before: function() {
+            if(!Roles.userIsInRole(Meteor.user(), ['admin'])) {
+                Log('Redirecting');
+                this.redirect('/');
+            }
+        }
+    });
+	
+});
+
+// set collection object and other global variables
 Tournaments = new Meteor.Collection("tournaments");
 index = {}; // index for use in select_* functions
 
-// check if it's the client
 if (Meteor.isClient) {
 	Meteor.startup(function () {
 		Session.set('data_loaded', false);
 	});
+	// subscriptions
 	Meteor.subscribe('tournamentdb', function() {
 		Session.set('data_loaded', true);
 	});
@@ -41,14 +67,20 @@ if (Meteor.isClient) {
 		if (Session.get('data_loaded')) {
 			var tourns = Tournaments.findOne(Session.get("selected_tournament"));		
 			// check against session's _id to determine leaderboard load
-			if (this._id === Session.get("selected_tournament")) {
-				return true;
-				}
-			return false;
+			if (this._id === Session.get("selected_tournament")) 
+				return true;			
 		}
 		return false;
 	};
-	
+	// determines if anything is selected by checking session variable selected_tournament
+	// prevents unnecessary db call
+	Template.container.selected_any = function() {
+		if (Session.get("selected_tournament"))
+			return true;
+		else
+			return false;
+	};
+	// toggle open/close of menu
 	Template.navbar.events({
 		'click .dropdown-toggle': function (e) {
 			e.preventDefault();
@@ -69,15 +101,17 @@ if (Meteor.isClient) {
 		'click li': function () {
 			Session.set("selected_tournament", this._id);
 			Session.set("selected_player",'');
+			Router.go('/');
 		}
 	});
-	// capture reset even in container template
-	//Template.container.events({
-	//	'click input.reset': function () {
-	//		Session.set("selected_tournament", '');
-	//		Session.set("selected_player",'');
-	//	}
-	//});
+	/* unused currently. capture reset even in container template
+	Template.container.events({
+		'click input.reset': function () {
+			Session.set("selected_tournament", '');
+			Session.set("selected_player",'');
+		}
+	}); */
+	
 	// leaderboard events capture
 	Template.leaderboard.events({
 	
@@ -100,13 +134,20 @@ if (Meteor.isClient) {
 			Tournaments.update(Session.get("selected_tournament"), dec);
 		}
 	});//end leader events
-	// events to capture in player template
-	//sets selected_player to the current playerid.  playerid is stored in tournament subdocument "players"
+	
+	// playerid is stored in tournament subdocument "players"
 	Template.player.events({
 		'click': function () {
 			Session.set("selected_player", this.playerid);
 		}
-	});//end player events	
+	});//end player events
+	
+		Template.account.helpers({
+        // check if user is an admin
+        isAdminUser: function() {
+            return Roles.userIsInRole(Meteor.user(), ['admin']);
+        }
+	});
 	
 	// Testing d3 visualizations in meteor from example: 
 	// https://github.com/adrianveres/Reactive-Bar-Chart-Demo
@@ -169,7 +210,8 @@ if (Meteor.isClient) {
         text_selector = window.d3vis.svg.selectAll(".bar_text")
           .data(names, function (d) {return d.name})
 		
-		// fancy transition for initial visualization display.  Slow to update, so only use once.
+		// fancy transition for initial draw.  Slow to update, so only use once.
+		// Duration longer, but also uses chained transitions to spread full width then grow up
 		 if (Deps.currentComputation.firstRun) {
 			bar_selector
 			  .enter().append("rect")
@@ -187,7 +229,7 @@ if (Meteor.isClient) {
 					.attr("y", function(d) { return window.d3vis.y(d.score); })
 					.attr("height", function(d) { return window.d3vis.height - window.d3vis.y(d.score); })
 			})
-			
+		// Text falls down and bounces on initial draw.  Delayed from graph draw by 100ms
 			text_selector
 			  .enter().append("text")
 			  .attr("class", "bar_text")
@@ -205,7 +247,7 @@ if (Meteor.isClient) {
 					.text(function(d) {return d.score;})
 					.attr("height", function(d) { return window.d3vis.height - window.d3vis.y(d.score); })
 			})
-		} else {  // more reactive transition for visualization updates.
+		} else {  // more reactive transition for visualization updates.  duration shortened.
 			bar_selector
 			  .enter().append("rect")
 			  .attr("class", "bar")
@@ -244,7 +286,6 @@ if (Meteor.isClient) {
   }
 }//end client code
 
-// server startup check for empty collections
 if (Meteor.isServer) {
 	Meteor.publish('tournamentdb', function () {
 		return Tournaments.find();
