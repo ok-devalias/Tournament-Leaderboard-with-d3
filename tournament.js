@@ -1,22 +1,34 @@
-// iron-router config and routes
+// iron-router config
 Router.configure({
-	layoutTemplate: 'layout'
+	layoutTemplate: 'layout'	
 	});
-
+// prevent partial loading of  protected templates before loggedIn state is determined
+// tmeasday @ https://github.com/EventedMind/iron-router/issues/286 
+Router.before(function() {
+  if (Meteor.loggingIn()) {
+    this.render(this.loadingTemplate);
+    this.stop();
+  } 
+});
+	
+// route mappings
 Router.map(function(){
 	this.route('home', {
 		path: '/',
 		template: 'main'
 	});
 	
-	this.route('account');
+	this.route('account', {
+		path: '/account',
+		template: 'account'
+	});
 	
 	this.route('admin', {
-        path:'/admin',
+		path:'admin',
         template: 'accountsAdmin',
         before: function() {
-            if(!Roles.userIsInRole(Meteor.user(), ['admin'])) {
-                Log('Redirecting');
+			if( !Roles.userIsInRole(Meteor.user(), ['admin']) ) {
+				Log('Redirecting');
                 this.redirect('/');
             }
         }
@@ -36,6 +48,8 @@ if (Meteor.isClient) {
 	Meteor.subscribe('tournamentdb', function() {
 		Session.set('data_loaded', true);
 	});
+
+
 	Template.tournlist.tournaments = function () {
 		return Tournaments.find({}, {fields: {name: 1, game: 1}});
 	};	
@@ -80,11 +94,17 @@ if (Meteor.isClient) {
 		else
 			return false;
 	};
-	// toggle open/close of menu
+	
 	Template.navbar.events({
+		// toggle open/close of menus
 		'click .dropdown-toggle': function (e) {
 			e.preventDefault();
 			$(e.target).find('.dropdown-menu').toggle();
+		},
+		// clear selections to show default page
+		'click a.navbar-brand': function () {
+			Session.set("selected_tournament", '');
+			Session.set("selected_player",'');
 		}
 	});
 	
@@ -104,14 +124,7 @@ if (Meteor.isClient) {
 			Router.go('/');
 		}
 	});
-	/* unused currently. capture reset even in container template
-	Template.container.events({
-		'click input.reset': function () {
-			Session.set("selected_tournament", '');
-			Session.set("selected_player",'');
-		}
-	}); */
-	
+			
 	// leaderboard events capture
 	Template.leaderboard.events({
 	
@@ -142,8 +155,8 @@ if (Meteor.isClient) {
 		}
 	});//end player events
 	
-		Template.account.helpers({
-        // check if user is an admin
+	// check if user is an admin
+	Template.account.helpers({
         isAdminUser: function() {
             return Roles.userIsInRole(Meteor.user(), ['admin']);
         }
@@ -289,5 +302,8 @@ if (Meteor.isClient) {
 if (Meteor.isServer) {
 	Meteor.publish('tournamentdb', function () {
 		return Tournaments.find();
+	});
+	Meteor.publish('usersdb', function () {
+		return Meteor.users.find({role: 'admin'}).fetch();
 	});
 }//end server code
