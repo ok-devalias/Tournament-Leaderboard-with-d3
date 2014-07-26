@@ -1,6 +1,4 @@
-<head>
-  <title>Tournament Leaderboards</title>  
-</head>
+<head><title>Tournament Leaderboards</title></head>
 
 <template name="layout">
 	{{> navbar}}
@@ -32,10 +30,14 @@
 							<ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
 								{{> tournlist}}
 							</ul>							
-						</li>					
+						</li>
 						<li><a href="#">Foo</a></li>
 						<li><a href="#">Bar</a></li>
-						<li><a href="{{ pathFor 'account' }}">Account</a></li>
+						<li>
+						{{#with uid}}
+							<a href="{{ pathFor 'profile' }}">Account</a>
+						{{/with}}
+						</li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
 					{{ loginButtons }}
@@ -129,21 +131,32 @@
   </div>
 </template>
 
-<template name="account">
+<template name="accountinfo">
+	<div class="info">
+		<p class="accountinfo text-center">User Profile</p>
+	</div>
+</template>
+
+<template name="profile">
 	<div class="container">
 		<div class="explain">
 			{{> accountinfo}}
 		</div>
-		{{#if isAdminUser}}
-			{{> accountsAdmin}}
-		{{else}}
-			Must be admin to see this...
-		{{/if}}
+		<div class="profile-attr">
+			<ul class="">
+				<li>Name</li>
+				<li>Email</li>
+				<li>Favorite Game(s)</li>
+				<li>Favorite Character(s)</li>
+				<li>Currently Playing</li>
+				<li>Website</li>
+			</ul>
+		</div>
+		<div class="profile-val pull-right">
+			<ul class="">
+				<li>{{ currentUser._id}}</li>
+			</ul>
+		</div>
 	</div>
 </template>
 
-<template name="accountinfo">
-	<div class="info container">
-		<p class="accountinfo text-center">User Accounts</p>
-	</div>
-</template>

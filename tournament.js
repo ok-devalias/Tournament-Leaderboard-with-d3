@@ -20,14 +20,40 @@ Router.map(function(){
 	
 	this.route('account', {
 		path: '/account',
-		template: 'account'
+		before: function() {
+			if ( !Meteor.userId()) {
+				Log('Redirecting');
+                this.redirect('/');
+			} else {
+				Log('Redirecting');
+				this.redirect('profile', { _id: Meteor.userId()});
+			}
+		}
+	});
+	
+	this.route('profile redirect', {
+		path: '/account/profile',
+		before: function() {
+			if ( !Meteor.userId()) {
+				Log('Redirecting');
+                this.redirect('/');
+			} else {
+				Log('Redirecting');
+				this.redirect('profile');
+			}
+		}
+	});
+	
+	this.route('profile', {
+		path: '/account/profile/:_id',
+		template: 'profile'
 	});
 	
 	this.route('admin', {
-		path:'admin',
+		path:'/account/admin',
         template: 'accountsAdmin',
         before: function() {
-			if( !Roles.userIsInRole(Meteor.user(), ['admin']) ) {
+			if ( !Roles.userIsInRole(Meteor.user(), ['admin']) ) {
 				Log('Redirecting');
                 this.redirect('/');
             }
